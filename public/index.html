@@ -35,7 +35,7 @@ nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:300;disp
 .np.done{color:var(--t2)}
 
 /* MAIN */
-main{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:88px 22px 80px}
+main{position:relative;z-index:1;max-width:920px;margin:0 auto;padding:88px 22px 80px}
 
 /* VIEWS */
 .view{display:none}
@@ -390,6 +390,50 @@ select option{background:#fff;color:var(--t1)}
 .pm-ab{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
 .spin{animation:spin 0.8s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* LARGE PLAYER CARD (config teams) */
+.pc{display:flex;align-items:center;gap:12px;padding:13px 14px;background:rgba(255,255,255,0.68);border:1px solid rgba(0,0,0,0.065);border-radius:14px;margin-bottom:7px;animation:sR 0.32s var(--out) both;position:relative}
+.pc:last-child{margin-bottom:0}
+.pc-av{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:600;flex-shrink:0;position:relative;overflow:hidden}
+.pc-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pc-info{flex:1;min-width:0}
+.pc-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.pc-name{font-size:14px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;letter-spacing:-0.3px}
+.pc-stat-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.pc-kd{font-family:var(--mono);font-size:10px;color:var(--t2);font-weight:500}
+.pc-elo{font-family:var(--mono);font-size:9px;color:var(--t3)}
+.pc-maps{display:flex;gap:3px;flex-wrap:wrap}
+.pc-cap{position:absolute;top:9px;right:10px;font-family:var(--mono);font-size:7px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;background:rgba(0,0,0,0.06);color:var(--t2);border:1px solid var(--br2);padding:2px 7px;border-radius:100px}
+
+/* TEAM MODE TABS */
+.team-tabs{display:flex;gap:5px;margin-bottom:14px}
+.tmb{font-family:var(--mono);font-size:9px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;padding:7px 18px;border-radius:100px;border:1px solid var(--br2);background:var(--bg);color:var(--t3);cursor:pointer;transition:all 0.18s ease}
+.tmb.active{background:var(--t1);color:#fff;border-color:var(--t1);box-shadow:0 2px 12px rgba(0,0,0,0.18)}
+.tmb:not(.active):hover{color:var(--t2);border-color:rgba(0,0,0,0.15)}
+
+/* DRAFT INDICATOR */
+.draft-ind{display:flex;align-items:center;gap:10px;padding:11px 16px;border-radius:12px;margin-bottom:12px;font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;border:1px solid var(--br);transition:all 0.28s var(--out)}
+.draft-ind.a{background:linear-gradient(90deg,rgba(0,113,227,0.07),transparent);border-color:rgba(0,113,227,0.18);color:var(--a)}
+.draft-ind.b{background:linear-gradient(90deg,transparent,rgba(255,149,0,0.07));border-color:rgba(255,149,0,0.18);color:var(--b);flex-direction:row-reverse}
+.draft-ind.done{background:rgba(52,199,89,0.05);border-color:rgba(52,199,89,0.2);color:var(--pick)}
+
+/* DRAFT POOL */
+.dp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:7px;margin-top:10px;margin-bottom:16px}
+.dp{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1px solid rgba(0,0,0,0.07);border-radius:12px;cursor:pointer;transition:all 0.18s var(--sp);box-shadow:var(--sh-xs);position:relative;animation:cIn 0.25s var(--sp) both}
+.dp:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+.dp:active{transform:scale(0.97)}
+.dp.pa-pick:hover{border-color:rgba(0,113,227,0.3);background:linear-gradient(180deg,rgba(0,113,227,0.05),rgba(0,113,227,0.02))}
+.dp.pa-pick:hover .dp-plus{background:var(--a);border-color:var(--a);color:#fff}
+.dp.pb-pick:hover{border-color:rgba(255,149,0,0.3);background:linear-gradient(180deg,rgba(255,149,0,0.05),rgba(255,149,0,0.02))}
+.dp.pb-pick:hover .dp-plus{background:var(--b);border-color:var(--b);color:#fff}
+.dp-av{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;flex-shrink:0;position:relative;overflow:hidden;color:#fff}
+.dp-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dp-info{flex:1;min-width:0}
+.dp-name{font-size:12px;font-weight:500;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.dp-sub{display:flex;align-items:center;gap:4px}
+.dp-kd{font-family:var(--mono);font-size:9px;color:var(--t2)}
+.dp-plus{width:22px;height:22px;border-radius:50%;border:1px solid var(--br2);color:var(--t3);display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;flex-shrink:0;transition:all 0.15s}
+.tc{max-height:520px;overflow-y:auto}
 </style>
 </head>
 <body>
@@ -437,17 +481,42 @@ select option{background:#fff;color:var(--t1)}
   <p class="sub">Name your teams, assign captains, set format and rules.</p>
 
   <div class="sl" style="margin-bottom:10px">Teams</div>
-  <div class="tg" style="margin-bottom:12px">
-    <div class="tc a">
-      <div class="tl a" id="cfg-tla">Team A</div>
-      <div id="cfg-ta"></div>
-    </div>
-    <div class="tc b">
-      <div class="tl b" id="cfg-tlb">Team B</div>
-      <div id="cfg-tb"></div>
-    </div>
+  <div class="team-tabs">
+    <button class="tmb active" id="tm-auto" onclick="setTeamMode('auto')">Auto-split</button>
+    <button class="tmb" id="tm-draft" onclick="setTeamMode('draft')">Draft pick</button>
   </div>
-  <button class="btn" onclick="reshuffle()" style="margin-bottom:16px;font-size:9px">&#8635; Reshuffle teams</button>
+
+  <!-- AUTO SPLIT -->
+  <div id="teams-auto">
+    <div class="tg" style="margin-bottom:10px">
+      <div class="tc a">
+        <div class="tl a" id="cfg-tla">Team A</div>
+        <div id="cfg-ta"></div>
+      </div>
+      <div class="tc b">
+        <div class="tl b" id="cfg-tlb">Team B</div>
+        <div id="cfg-tb"></div>
+      </div>
+    </div>
+    <button class="btn" onclick="reshuffle()" style="margin-bottom:16px;font-size:9px">&#8635; Reshuffle teams</button>
+  </div>
+
+  <!-- DRAFT PICK -->
+  <div id="teams-draft" style="display:none">
+    <div class="tg" style="margin-bottom:10px">
+      <div class="tc a">
+        <div class="tl a" id="draft-tla">Team A</div>
+        <div id="draft-ta"><span style="font-family:var(--mono);font-size:9px;color:var(--t4);letter-spacing:0.1em;text-transform:uppercase">No picks yet</span></div>
+      </div>
+      <div class="tc b">
+        <div class="tl b" id="draft-tlb">Team B</div>
+        <div id="draft-tb"><span style="font-family:var(--mono);font-size:9px;color:var(--t4);letter-spacing:0.1em;text-transform:uppercase">No picks yet</span></div>
+      </div>
+    </div>
+    <div id="draft-ind"></div>
+    <div class="sl" style="margin-bottom:0">Available players</div>
+    <div class="dp-grid" id="draft-pool"></div>
+  </div>
 
   <div class="card">
     <div class="sl" style="margin-bottom:14px">Team Names &amp; Captains</div>
@@ -720,6 +789,7 @@ const CF=['#60a5fa','#fb923c','#4ade80','#c084fc','#f87171','#fbbf24','#34d399']
 
 let players=[],teamA=[],teamB=[]
 let teamAName='Team A',teamBName='Team B'
+let teamMode='auto',draftPicking='A',draftPool=[]
 let captainA='',captainB=''
 let format='bo3'
 let timerEnabled=true,timerDuration=30
@@ -747,10 +817,15 @@ function esc(s){return s.replace(/'/g,"\\'")}
 
 function goConfig(){
   if(players.length<2){alert('Add at least 2 players.');return}
-  splitTeams();renderConfig();goView('config')
+  if(teamMode==='auto')splitTeams()
+  else{teamA=[];teamB=[];draftPool=[...players];draftPicking='A'}
+  renderConfig();goView('config')
 }
 function splitTeams(){const s=shuffle(players);teamA=s.slice(0,Math.ceil(s.length/2));teamB=s.slice(Math.ceil(s.length/2))}
-function reshuffle(){splitTeams();renderConfig()}
+function reshuffle(){
+  if(teamMode==='draft'){teamA=[];teamB=[];draftPool=[...players];draftPicking='A';renderDraft()}
+  else{splitTeams();renderConfig()}
+}
 function getPlayerColor(name){
   const cols=['#0071e3','#ff9500','#34c759','#af52de','#ff3b30','#5ac8fa','#ff2d55']
   return cols[(name||'').charCodeAt(0)%cols.length]
@@ -776,11 +851,13 @@ function renderConfig(){
   teamBName=document.getElementById('tb-name').value||'Team B'
   document.getElementById('cfg-tla').textContent=teamAName
   document.getElementById('cfg-tlb').textContent=teamBName
-  document.getElementById('cfg-ta').innerHTML=teamA.map((p,i)=>profileCardHTML(p,i)).join('')
-  document.getElementById('cfg-tb').innerHTML=teamB.map((p,i)=>profileCardHTML(p,i)).join('')
-  const sa=document.getElementById('cap-a'),sb=document.getElementById('cap-b')
-  sa.innerHTML=teamA.map(p=>`<option value="${p}">${p}</option>`).join('')
-  sb.innerHTML=teamB.map(p=>`<option value="${p}">${p}</option>`).join('')
+  if(teamMode==='auto'){
+    document.getElementById('cfg-ta').innerHTML=teamA.map((p,i)=>largePCHTML(p,i,'a')).join('') || '<span style="font-family:var(--mono);font-size:9px;color:var(--t4);letter-spacing:0.1em;text-transform:uppercase">No players</span>'
+    document.getElementById('cfg-tb').innerHTML=teamB.map((p,i)=>largePCHTML(p,i,'b')).join('') || '<span style="font-family:var(--mono);font-size:9px;color:var(--t4);letter-spacing:0.1em;text-transform:uppercase">No players</span>'
+  } else {
+    renderDraft()
+  }
+  syncCaptainSelects()
   renderMapPool();updateFmtDesc();updateTimerUI()
 }
 function updateNames(){
@@ -788,7 +865,88 @@ function updateNames(){
   teamBName=document.getElementById('tb-name').value||'Team B'
   document.getElementById('cfg-tla').textContent=teamAName
   document.getElementById('cfg-tlb').textContent=teamBName
+  const dtla=document.getElementById('draft-tla'),dtlb=document.getElementById('draft-tlb')
+  if(dtla)dtla.textContent=teamAName
+  if(dtlb)dtlb.textContent=teamBName
 }
+// ── Team mode & draft ─────────────────────────────────────────────
+function setTeamMode(mode){
+  teamMode=mode
+  document.getElementById('tm-auto').classList.toggle('active',mode==='auto')
+  document.getElementById('tm-draft').classList.toggle('active',mode==='draft')
+  document.getElementById('teams-auto').style.display=mode==='auto'?'':'none'
+  document.getElementById('teams-draft').style.display=mode==='draft'?'':'none'
+  if(mode==='draft'){teamA=[];teamB=[];draftPool=[...players];draftPicking='A';renderDraft()}
+  syncCaptainSelects()
+}
+
+function syncCaptainSelects(){
+  const sa=document.getElementById('cap-a'),sb=document.getElementById('cap-b')
+  if(!sa||!sb)return
+  const prevA=sa.value,prevB=sb.value
+  sa.innerHTML=teamA.map(p=>`<option value="${p}">${p}</option>`).join('')
+  sb.innerHTML=teamB.map(p=>`<option value="${p}">${p}</option>`).join('')
+  if(teamA.includes(prevA))sa.value=prevA
+  if(teamB.includes(prevB))sb.value=prevB
+}
+
+function draftPick(name){
+  draftPool=draftPool.filter(p=>p!==name)
+  if(draftPicking==='A'){teamA.push(name);draftPicking='B'}
+  else{teamB.push(name);draftPicking='A'}
+  renderDraft();syncCaptainSelects()
+}
+
+function renderDraft(){
+  const tName=teamAName||document.getElementById('ta-name')?.value||'Team A'
+  const bName=teamBName||document.getElementById('tb-name')?.value||'Team B'
+  const dtla=document.getElementById('draft-tla'),dtlb=document.getElementById('draft-tlb')
+  if(dtla)dtla.textContent=tName
+  if(dtlb)dtlb.textContent=bName
+  const taEl=document.getElementById('draft-ta'),tbEl=document.getElementById('draft-tb')
+  const empty='<span style="font-family:var(--mono);font-size:9px;color:var(--t4);letter-spacing:0.1em;text-transform:uppercase">No picks yet</span>'
+  if(taEl)taEl.innerHTML=teamA.map((p,i)=>largePCHTML(p,i,'a')).join('')||empty
+  if(tbEl)tbEl.innerHTML=teamB.map((p,i)=>largePCHTML(p,i,'b')).join('')||empty
+  const indEl=document.getElementById('draft-ind')
+  if(!indEl)return
+  if(!draftPool.length){
+    indEl.innerHTML='<div class="draft-ind done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>Draft complete — all players assigned</div>'
+  } else {
+    const pickName=draftPicking==='A'?tName:bName
+    indEl.innerHTML=`<div class="draft-ind ${draftPicking.toLowerCase()}"><div class="pdot ${draftPicking.toLowerCase()}"></div>${pickName} selects a player</div>`
+  }
+  const poolEl=document.getElementById('draft-pool')
+  if(poolEl)poolEl.innerHTML=draftPool.map(n=>draftCardHTML(n)).join('')
+}
+
+function largePCHTML(name,i,team){
+  const p=playerDB.find(x=>x.name===name)
+  const color=getPlayerColor(name)
+  const initials=name.slice(0,2).toUpperCase()
+  const av=`<div class="pc-av" style="background:${color};color:#fff">${initials}${p?.avatarUrl?`<img src="${p.avatarUrl}" onerror="this.style.display='none'">`:''}</div>`
+  const badge=p?.faceitLevel?`<span class="fl fl-${p.faceitLevel}">${p.faceitLevel}</span>`:''
+  const kdDiff=p?.recentKd&&p?.kdRatio?parseFloat(p.recentKd)-parseFloat(p.kdRatio):0
+  const trend=kdDiff>0.05?`<span style="color:var(--pick)"> ↑</span>`:kdDiff<-0.05?`<span style="color:var(--ban)"> ↓</span>`:''
+  const kd=p?.kdRatio?`<span class="pc-kd">${p.recentKd||p.kdRatio} K/D${trend}</span>`:''
+  const elo=p?.faceitElo?`<span class="pc-elo">${p.faceitElo} ELO</span>`:''
+  const statRow=kd||elo?`<div class="pc-stat-row">${kd}${elo}</div>`:''
+  const mapsRow=p?.mapStats&&Object.keys(p.mapStats).length?`<div class="pc-maps">${ALL_MAPS.map(m=>{const ms=p.mapStats[m];const cls=!ms?'none':ms.wr>=55?'good':ms.wr>=45?'ok':'bad';return`<span class="pp-map-tag ${cls}" title="${m}${ms?': '+ms.wr+'% ('+ms.matches+' games)':': no data'}">${MAP_SHORT[m]}${ms?' '+ms.wr+'%':''}</span>`}).join('')}</div>`:''
+  const capVal=team==='a'?document.getElementById('cap-a')?.value:document.getElementById('cap-b')?.value
+  const capBadge=name===capVal?`<span class="pc-cap">cap</span>`:''
+  return `<div class="pc" style="animation-delay:${i*45}ms">${av}<div class="pc-info"><div class="pc-top"><span class="pc-name">${name}</span>${badge}</div>${statRow}${mapsRow}</div>${capBadge}</div>`
+}
+
+function draftCardHTML(name){
+  const p=playerDB.find(x=>x.name===name)
+  const color=getPlayerColor(name)
+  const initials=name.slice(0,2).toUpperCase()
+  const av=`<div class="dp-av" style="background:${color}">${initials}${p?.avatarUrl?`<img src="${p.avatarUrl}" onerror="this.style.display='none'">`:''}</div>`
+  const badge=p?.faceitLevel?`<span class="fl fl-${p.faceitLevel}" style="width:16px;height:16px;font-size:8px">${p.faceitLevel}</span>`:''
+  const kd=p?.kdRatio?`<span class="dp-kd">${p.recentKd||p.kdRatio} K/D</span>`:''
+  const cls=draftPicking==='A'?'pa-pick':'pb-pick'
+  return `<div class="dp ${cls}" onclick="draftPick('${esc(name)}')">${av}<div class="dp-info"><div class="dp-name">${name}</div><div class="dp-sub">${badge}${kd}</div></div><div class="dp-plus">+</div></div>`
+}
+
 function setFmt(f){format=f;['bo1','bo3','bo5','bo1ept'].forEach(x=>document.getElementById('fb-'+x).classList.toggle('active',x===f));updateFmtDesc();checkMapWarn()}
 function updateFmtDesc(){document.getElementById('fmt-desc').textContent=FMT_DESC[format]||''}
 function updateTimerUI(){const on=document.getElementById('timer-tog').checked;timerEnabled=on;document.getElementById('timer-cfg').style.opacity=on?'1':'0.4';document.getElementById('timer-cfg').style.pointerEvents=on?'auto':'none'}
@@ -800,6 +958,7 @@ function toggleMap(m){if(selectedMaps.includes(m)){if(selectedMaps.length<=7)ret
 function checkMapWarn(){document.getElementById('map-warn').classList.toggle('show',selectedMaps.length<7)}
 function goFlip(){
   if(selectedMaps.length<7){alert('Select at least 7 maps.');return}
+  if(teamMode==='draft'&&draftPool.length>0&&!confirm(draftPool.length+' player(s) not yet drafted. Continue anyway?'))return
   captainA=document.getElementById('cap-a').value||teamA[0]||''
   captainB=document.getElementById('cap-b').value||teamB[0]||''
   teamAName=document.getElementById('ta-name').value||'Team A'
@@ -1036,6 +1195,11 @@ function resetAll(){
   format='bo3';timerEnabled=true;timerDuration=30;selectedMaps=[...ACTIVE]
   step=0;vetoLog=[];sideQ=[];mapResults=[];curSide=null
   timerLeft=0;vetoFirst='A';flipWinner=null;knifeWinner=null;knifeMap=null
+  teamMode='auto';draftPicking='A';draftPool=[]
+  document.getElementById('tm-auto')?.classList.add('active')
+  document.getElementById('tm-draft')?.classList.remove('active')
+  document.getElementById('teams-auto').style.display=''
+  document.getElementById('teams-draft').style.display='none'
   renderPlayers()
   goView('players')
 }
