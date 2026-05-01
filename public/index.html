@@ -514,7 +514,7 @@ select option{background:#fff;color:var(--t1)}
       </div>
     </div>
     <div id="draft-ind"></div>
-    <div class="sl" style="margin-bottom:0">Available players</div>
+    <div id="draft-pool-label"></div>
     <div class="dp-grid" id="draft-pool"></div>
   </div>
 
@@ -789,7 +789,8 @@ const CF=['#60a5fa','#fb923c','#4ade80','#c084fc','#f87171','#fbbf24','#34d399']
 
 let players=[],teamA=[],teamB=[]
 let teamAName='Team A',teamBName='Team B'
-let teamMode='auto',draftPicking='A',draftPool=[]
+let teamMode='auto',draftPicking='A',draftPool=[],draftPhase='captain_a',draftSnakeIdx=0
+const SNAKE_SEQ=['A','B','B','A']
 let captainA='',captainB=''
 let format='bo3'
 let timerEnabled=true,timerDuration=30
@@ -818,12 +819,12 @@ function esc(s){return s.replace(/'/g,"\\'")}
 function goConfig(){
   if(players.length<2){alert('Add at least 2 players.');return}
   if(teamMode==='auto')splitTeams()
-  else{teamA=[];teamB=[];draftPool=[...players];draftPicking='A'}
+  else{teamA=[];teamB=[];draftPool=[...players];draftPhase='captain_a';draftSnakeIdx=0}
   renderConfig();goView('config')
 }
 function splitTeams(){const s=shuffle(players);teamA=s.slice(0,Math.ceil(s.length/2));teamB=s.slice(Math.ceil(s.length/2))}
 function reshuffle(){
-  if(teamMode==='draft'){teamA=[];teamB=[];draftPool=[...players];draftPicking='A';renderDraft()}
+  if(teamMode==='draft'){teamA=[];teamB=[];draftPool=[...players];draftPhase='captain_a';draftSnakeIdx=0;renderDraft()}
   else{splitTeams();renderConfig()}
 }
 function getPlayerColor(name){
@@ -876,25 +877,38 @@ function setTeamMode(mode){
   document.getElementById('tm-draft').classList.toggle('active',mode==='draft')
   document.getElementById('teams-auto').style.display=mode==='auto'?'':'none'
   document.getElementById('teams-draft').style.display=mode==='draft'?'':'none'
-  if(mode==='draft'){teamA=[];teamB=[];draftPool=[...players];draftPicking='A';renderDraft()}
+  if(mode==='draft'){teamA=[];teamB=[];draftPool=[...players];draftPhase='captain_a';draftSnakeIdx=0;renderDraft()}
   syncCaptainSelects()
 }
 
 function syncCaptainSelects(){
   const sa=document.getElementById('cap-a'),sb=document.getElementById('cap-b')
   if(!sa||!sb)return
-  const prevA=sa.value,prevB=sb.value
   sa.innerHTML=teamA.map(p=>`<option value="${p}">${p}</option>`).join('')
   sb.innerHTML=teamB.map(p=>`<option value="${p}">${p}</option>`).join('')
-  if(teamA.includes(prevA))sa.value=prevA
-  if(teamB.includes(prevB))sb.value=prevB
+  // always default captain = first pick (index 0)
+  if(teamA[0])sa.value=teamA[0]
+  if(teamB[0])sb.value=teamB[0]
 }
 
 function draftPick(name){
   draftPool=draftPool.filter(p=>p!==name)
-  if(draftPicking==='A'){teamA.push(name);draftPicking='B'}
-  else{teamB.push(name);draftPicking='A'}
+  if(draftPhase==='captain_a'){
+    teamA=[name];draftPhase='captain_b'
+  } else if(draftPhase==='captain_b'){
+    teamB=[name];draftPhase='snake'
+  } else {
+    const picker=SNAKE_SEQ[draftSnakeIdx%4]
+    if(picker==='A')teamA.push(name);else teamB.push(name)
+    draftSnakeIdx++
+  }
   renderDraft();syncCaptainSelects()
+}
+
+function currentDraftPicker(){
+  if(draftPhase==='captain_a')return 'A'
+  if(draftPhase==='captain_b')return 'B'
+  return SNAKE_SEQ[draftSnakeIdx%4]
 }
 
 function renderDraft(){
@@ -905,21 +919,36 @@ function renderDraft(){
   if(dtlb)dtlb.textContent=bName
   const taEl=document.getElementById('draft-ta'),tbEl=document.getElementById('draft-tb')
   const empty='<span style="font-family:var(--mono);font-size:9px;color:var(--t4);letter-spacing:0.1em;text-transform:uppercase">No picks yet</span>'
-  if(taEl)taEl.innerHTML=teamA.map((p,i)=>largePCHTML(p,i,'a')).join('')||empty
-  if(tbEl)tbEl.innerHTML=teamB.map((p,i)=>largePCHTML(p,i,'b')).join('')||empty
+  if(taEl)taEl.innerHTML=teamA.map((p,i)=>largePCHTML(p,i,'a',true)).join('')||empty
+  if(tbEl)tbEl.innerHTML=teamB.map((p,i)=>largePCHTML(p,i,'b',true)).join('')||empty
   const indEl=document.getElementById('draft-ind')
   if(!indEl)return
-  if(!draftPool.length){
-    indEl.innerHTML='<div class="draft-ind done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>Draft complete — all players assigned</div>'
+  if(draftPhase==='captain_a'){
+    indEl.innerHTML=`<div class="draft-ind a"><div class="pdot a"></div>Pick ${tName} captain</div>`
+  } else if(draftPhase==='captain_b'){
+    indEl.innerHTML=`<div class="draft-ind b"><div class="pdot b"></div>Pick ${bName} captain</div>`
+  } else if(!draftPool.length){
+    indEl.innerHTML='<div class="draft-ind done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><polyline points="20 6 9 17 4 12"/></svg>Draft complete</div>'
   } else {
-    const pickName=draftPicking==='A'?tName:bName
-    indEl.innerHTML=`<div class="draft-ind ${draftPicking.toLowerCase()}"><div class="pdot ${draftPicking.toLowerCase()}"></div>${pickName} selects a player</div>`
+    const picker=SNAKE_SEQ[draftSnakeIdx%4]
+    const pickName=picker==='A'?tName:bName
+    const pickNum=draftSnakeIdx+1
+    const totalSnakePicks=players.length-2
+    indEl.innerHTML=`<div class="draft-ind ${picker.toLowerCase()}"><div class="pdot ${picker.toLowerCase()}"></div>${pickName} picks &nbsp;<span style="font-size:9px;opacity:0.6">pick ${pickNum} of ${totalSnakePicks} · ABBA snake</span></div>`
   }
+  const poolLabelEl=document.getElementById('draft-pool-label')
   const poolEl=document.getElementById('draft-pool')
-  if(poolEl)poolEl.innerHTML=draftPool.map(n=>draftCardHTML(n)).join('')
+  if(poolLabelEl){
+    const labelTxt=draftPhase==='snake'?'Available players':'Choose captain'
+    poolLabelEl.innerHTML=`<div class="sl" style="margin-bottom:8px">${labelTxt}</div>`
+  }
+  if(poolEl){
+    const cls=currentDraftPicker()==='A'?'pa-pick':'pb-pick'
+    poolEl.innerHTML=draftPool.length?draftPool.map(n=>draftCardHTML(n,cls)).join(''):''
+  }
 }
 
-function largePCHTML(name,i,team){
+function largePCHTML(name,i,team,isDraft=false){
   const p=playerDB.find(x=>x.name===name)
   const color=getPlayerColor(name)
   const initials=name.slice(0,2).toUpperCase()
@@ -931,20 +960,20 @@ function largePCHTML(name,i,team){
   const elo=p?.faceitElo?`<span class="pc-elo">${p.faceitElo} ELO</span>`:''
   const statRow=kd||elo?`<div class="pc-stat-row">${kd}${elo}</div>`:''
   const mapsRow=p?.mapStats&&Object.keys(p.mapStats).length?`<div class="pc-maps">${ALL_MAPS.map(m=>{const ms=p.mapStats[m];const cls=!ms?'none':ms.wr>=55?'good':ms.wr>=45?'ok':'bad';return`<span class="pp-map-tag ${cls}" title="${m}${ms?': '+ms.wr+'% ('+ms.matches+' games)':': no data'}">${MAP_SHORT[m]}${ms?' '+ms.wr+'%':''}</span>`}).join('')}</div>`:''
-  const capVal=team==='a'?document.getElementById('cap-a')?.value:document.getElementById('cap-b')?.value
-  const capBadge=name===capVal?`<span class="pc-cap">cap</span>`:''
+  const isCap=isDraft?i===0:(name===(team==='a'?document.getElementById('cap-a')?.value:document.getElementById('cap-b')?.value))
+  const capBadge=isCap?`<span class="pc-cap">cap</span>`:''
   return `<div class="pc" style="animation-delay:${i*45}ms">${av}<div class="pc-info"><div class="pc-top"><span class="pc-name">${name}</span>${badge}</div>${statRow}${mapsRow}</div>${capBadge}</div>`
 }
 
-function draftCardHTML(name){
+function draftCardHTML(name,cls='pa-pick'){
   const p=playerDB.find(x=>x.name===name)
   const color=getPlayerColor(name)
   const initials=name.slice(0,2).toUpperCase()
   const av=`<div class="dp-av" style="background:${color}">${initials}${p?.avatarUrl?`<img src="${p.avatarUrl}" onerror="this.style.display='none'">`:''}</div>`
   const badge=p?.faceitLevel?`<span class="fl fl-${p.faceitLevel}" style="width:16px;height:16px;font-size:8px">${p.faceitLevel}</span>`:''
   const kd=p?.kdRatio?`<span class="dp-kd">${p.recentKd||p.kdRatio} K/D</span>`:''
-  const cls=draftPicking==='A'?'pa-pick':'pb-pick'
-  return `<div class="dp ${cls}" onclick="draftPick('${esc(name)}')">${av}<div class="dp-info"><div class="dp-name">${name}</div><div class="dp-sub">${badge}${kd}</div></div><div class="dp-plus">+</div></div>`
+  const elo=p?.faceitElo?`<span class="dp-kd" style="color:var(--t3)">${p.faceitElo}</span>`:''
+  return `<div class="dp ${cls}" onclick="draftPick('${esc(name)}')">${av}<div class="dp-info"><div class="dp-name">${name}</div><div class="dp-sub">${badge}${kd}${elo}</div></div><div class="dp-plus">+</div></div>`
 }
 
 function setFmt(f){format=f;['bo1','bo3','bo5','bo1ept'].forEach(x=>document.getElementById('fb-'+x).classList.toggle('active',x===f));updateFmtDesc();checkMapWarn()}
@@ -1195,7 +1224,7 @@ function resetAll(){
   format='bo3';timerEnabled=true;timerDuration=30;selectedMaps=[...ACTIVE]
   step=0;vetoLog=[];sideQ=[];mapResults=[];curSide=null
   timerLeft=0;vetoFirst='A';flipWinner=null;knifeWinner=null;knifeMap=null
-  teamMode='auto';draftPicking='A';draftPool=[]
+  teamMode='auto';draftPicking='A';draftPool=[];draftPhase='captain_a';draftSnakeIdx=0
   document.getElementById('tm-auto')?.classList.add('active')
   document.getElementById('tm-draft')?.classList.remove('active')
   document.getElementById('teams-auto').style.display=''
