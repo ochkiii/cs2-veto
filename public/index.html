@@ -117,6 +117,17 @@ select option{background:#fff;color:var(--t1)}
 .pp-sub{display:flex;align-items:center;gap:6px}
 .pp-kd{font-family:var(--mono);font-size:9px;color:var(--t2)}
 .pp-elo{font-family:var(--mono);font-size:9px;color:var(--t3)}
+.pp-maps{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap}
+.pp-map-tag{font-family:var(--mono);font-size:7px;font-weight:600;letter-spacing:0.07em;padding:2px 5px;border-radius:4px;cursor:default;white-space:nowrap}
+.pp-map-tag.good{background:rgba(52,199,89,0.14);color:#1a9e50}
+.pp-map-tag.ok{background:rgba(255,149,0,0.15);color:#c47f00}
+.pp-map-tag.bad{background:rgba(255,59,48,0.12);color:var(--ban)}
+.pp-map-tag.none{background:rgba(0,0,0,0.05);color:var(--t4)}
+/* Team WR badges on veto map cards */
+.mb-wr{position:absolute;top:8px;left:8px;display:flex;flex-direction:column;gap:2px;z-index:1;pointer-events:none}
+.mb-wr-t{font-family:var(--mono);font-size:7px;font-weight:600;letter-spacing:0.04em;padding:1px 5px;border-radius:4px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.mb-wr-t.wa{background:rgba(0,113,227,0.5);color:#fff}
+.mb-wr-t.wb{background:rgba(255,149,0,0.5);color:#fff}
 
 /* MAP POOL GRID */
 .mpg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
@@ -690,6 +701,8 @@ select option{background:#fff;color:var(--t1)}
 const ALL_MAPS=['Mirage','Inferno','Nuke','Dust2','Ancient','Anubis','Overpass']
 const ACTIVE=['Mirage','Inferno','Nuke','Dust2','Ancient','Anubis','Overpass']
 const MAP_IMAGES={'Mirage':'maps/Mirage.jpg','Inferno':'maps/Inferno.jpg','Nuke':'maps/Nuke.jpg','Dust2':'maps/Dust 2.jpg','Ancient':'maps/Ancient.jpg','Anubis':'maps/Anubis.jpg','Overpass':'maps/Overpass.jpg'}
+const MAP_KEYS={'de_mirage':'Mirage','de_inferno':'Inferno','de_nuke':'Nuke','de_dust2':'Dust2','de_ancient':'Ancient','de_anubis':'Anubis','de_overpass':'Overpass','Mirage':'Mirage','Inferno':'Inferno','Nuke':'Nuke','Dust2':'Dust2','Dust 2':'Dust2','Ancient':'Ancient','Anubis':'Anubis','Overpass':'Overpass'}
+const MAP_SHORT={'Mirage':'Mi','Inferno':'In','Nuke':'Nu','Dust2':'D2','Ancient':'An','Anubis':'Ab','Overpass':'Op'}
 
 const SEQ={
   bo1:   [{t:'A',a:'ban'},{t:'B',a:'ban'},{t:'A',a:'ban'},{t:'B',a:'ban'},{t:'A',a:'ban'},{t:'B',a:'ban'}],
@@ -754,7 +767,8 @@ function profileCardHTML(name,i){
     const trend=kdDiff>0.05?`<span style="color:var(--pick)"> ↑</span>`:kdDiff<-0.05?`<span style="color:var(--ban)"> ↓</span>`:''
     sub=`<div class="pp-sub"><span class="pp-kd">${p.recentKd||p.kdRatio} K/D${trend}</span>${p.faceitElo?`<span class="pp-elo">${p.faceitElo}</span>`:''}</div>`
   }
-  return `<div class="pp" style="animation-delay:${i*40}ms">${av}<div class="pp-info"><div class="pp-top"><span class="pp-name">${name}</span>${badge}</div>${sub}</div></div>`
+  const mapsRow=p?.mapStats&&Object.keys(p.mapStats).length?`<div class="pp-maps">${ALL_MAPS.map(m=>{const ms=p.mapStats[m];const cls=!ms?'none':ms.wr>=55?'good':ms.wr>=45?'ok':'bad';return`<span class="pp-map-tag ${cls}" title="${m}${ms?': '+ms.wr+'% WR ('+ms.matches+' games)':': no data'}">${MAP_SHORT[m]}${ms?' '+ms.wr+'%':''}</span>`}).join('')}</div>`:''
+  return `<div class="pp" style="animation-delay:${i*40}ms">${av}<div class="pp-info"><div class="pp-top"><span class="pp-name">${name}</span>${badge}</div>${sub}${mapsRow}</div></div>`
 }
 
 function renderConfig(){
@@ -846,6 +860,10 @@ function updateTrack(){
   const seq=SEQ[format]
   seq.forEach((s,i)=>{const el=document.getElementById('sd'+i);if(!el)return;el.className='sd';if(i<step){if(s.a==='ban')el.classList.add('bn');else el.classList.add(seqToActual(s.t)==='A'?'pa':'pb')}else if(i===step)el.classList.add('cur')})
 }
+function teamMapWR(playerNames,map){
+  const vals=playerNames.map(n=>playerDB.find(p=>p.name===n)).filter(p=>p?.mapStats?.[map]?.matches>=5).map(p=>p.mapStats[map].wr)
+  return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null
+}
 function renderMapGrid(){
   document.getElementById('map-grid').innerHTML=selectedMaps.map(m=>{
     const s=mapStates[m];let cls='mb',stag='',dis=''
@@ -856,7 +874,12 @@ function renderMapGrid(){
     const img=MAP_IMAGES[m]
     if(img)cls+=' has-img'
     const imgStyle=img?` style="--map-img:url('${img}')"`:'';
-    return `<button class="${cls}"${imgStyle} ${dis} onclick="doVeto('${m}')"><span class="mn">${m}</span><span class="ms">${stag||'Available'}</span></button>`
+    let wrBadge=''
+    if(s==='available'){
+      const wrA=teamMapWR(teamA,m),wrB=teamMapWR(teamB,m)
+      if(wrA!==null||wrB!==null)wrBadge=`<span class="mb-wr">${wrA!==null?`<span class="mb-wr-t wa">${teamAName[0]||'A'} ${wrA}%</span>`:''}${wrB!==null?`<span class="mb-wr-t wb">${teamBName[0]||'B'} ${wrB}%</span>`:''}</span>`
+    }
+    return `<button class="${cls}"${imgStyle} ${dis} onclick="doVeto('${m}')">${wrBadge}<span class="mn">${m}</span><span class="ms">${stag||'Available'}</span></button>`
   }).join('')
 }
 function updateAction(){
@@ -1066,7 +1089,7 @@ function openPlayerModal(name){
   const prev=document.getElementById('pm-preview')
   prev.classList.remove('show');prev.innerHTML=''
   document.getElementById('pm-fetch-status').textContent=''
-  if(p&&p.kdRatio)showPmPreview({name:p.name,level:p.faceitLevel,elo:p.faceitElo,avatarUrl:p.avatarUrl,kdRatio:p.kdRatio,recentKd:p.recentKd,recentWr:p.recentWr,recentHs:p.recentHs,winRate:p.winRate})
+  if(p&&p.kdRatio)showPmPreview({name:p.name,level:p.faceitLevel,elo:p.faceitElo,avatarUrl:p.avatarUrl,kdRatio:p.kdRatio,recentKd:p.recentKd,recentWr:p.recentWr,recentHs:p.recentHs,winRate:p.winRate,mapStats:p.mapStats})
   document.getElementById('pm-ov').classList.add('vis')
 }
 
@@ -1091,13 +1114,13 @@ async function fetchFaceitForModal(){
       fetch(`https://open.faceit.com/data/v4/players/${pid}/stats/cs2`,{headers:hdrs}),
       fetch(`https://open.faceit.com/data/v4/players/${pid}/games/cs2/stats?limit=20`,{headers:hdrs})
     ])
-    let kdRatio='',winRate=0,hsPercent=0,recentKd='',recentWr=0,recentHs=0
-    if(r2.status==='fulfilled'&&r2.value.ok){const ls=await r2.value.json();const s=ls.lifetime||{};kdRatio=s['K/D Ratio']||'';winRate=parseInt(s['Win Rate %'])||0;hsPercent=parseInt(s['Average Headshots %'])||0}
+    let kdRatio='',winRate=0,hsPercent=0,recentKd='',recentWr=0,recentHs=0,mapStats={}
+    if(r2.status==='fulfilled'&&r2.value.ok){const ls=await r2.value.json();const s=ls.lifetime||{};kdRatio=s['K/D Ratio']||'';winRate=parseInt(s['Win Rate %'])||0;hsPercent=parseInt(s['Average Headshots %'])||0;(ls.segments||[]).filter(sg=>sg.type==='Map').forEach(sg=>{const mn=MAP_KEYS[sg.label];if(mn&&parseInt(sg.stats?.['Matches']||0)>=5)mapStats[mn]={wr:parseInt(sg.stats?.['Win Rate %'])||0,kd:parseFloat(sg.stats?.['K/D Ratio']||0).toFixed(2),matches:parseInt(sg.stats?.['Matches']||0)}})}
     if(r3.status==='fulfilled'&&r3.value.ok){const rec=await r3.value.json();const items=rec.items||[];if(items.length){recentKd=(items.reduce((s,m)=>s+parseFloat(m.stats?.['K/D Ratio']||0),0)/items.length).toFixed(2);recentWr=Math.round(items.filter(m=>m.stats?.Result==='1').length/items.length*100);recentHs=Math.round(items.reduce((s,m)=>s+parseFloat(m.stats?.['Headshots %']||0),0)/items.length)}}
-    _pmFetched={faceitId:pid,faceitLevel:level,faceitElo:elo,avatarUrl,kdRatio,winRate,hsPercent,recentKd,recentWr,recentHs,faceitUsername:username}
+    _pmFetched={faceitId:pid,faceitLevel:level,faceitElo:elo,avatarUrl,kdRatio,winRate,hsPercent,recentKd,recentWr,recentHs,mapStats,faceitUsername:username}
     statusEl.textContent=''
     if(!document.getElementById('pm-name').value)document.getElementById('pm-name').value=pl.nickname||username
-    showPmPreview({name:document.getElementById('pm-name').value,level,elo,avatarUrl,kdRatio,recentKd,recentWr,recentHs,winRate})
+    showPmPreview({name:document.getElementById('pm-name').value,level,elo,avatarUrl,kdRatio,recentKd,recentWr,recentHs,winRate,mapStats})
   }catch(err){statusEl.style.color='var(--ban)';statusEl.textContent='Error: '+err.message}
 }
 
@@ -1105,7 +1128,8 @@ function showPmPreview(d){
   const prev=document.getElementById('pm-preview')
   const kdDiff=d.recentKd&&d.kdRatio?parseFloat(d.recentKd)-parseFloat(d.kdRatio):0
   const trend=kdDiff>0.05?`<span style="color:var(--pick)"> ↑</span>`:kdDiff<-0.05?`<span style="color:var(--ban)"> ↓</span>`:''
-  prev.innerHTML=`<div class="pm-preview-top">${d.avatarUrl?`<img src="${d.avatarUrl}" onerror="this.style.display='none'">`:''}<span class="fl fl-${d.level||0}">${d.level||'?'}</span><div><div style="font-size:13px;font-weight:500;color:var(--t1);margin-bottom:2px">${d.name||'—'}</div><div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${d.elo||0} ELO</div></div></div><div style="display:flex;gap:14px;flex-wrap:wrap">${d.kdRatio?`<div class="pm-stat"><span class="pm-stat-val">${d.kdRatio}</span> K/D</div>`:''}${d.recentKd?`<div class="pm-stat"><span class="pm-stat-val">${d.recentKd}${trend}</span> recent</div>`:''}${d.recentWr?`<div class="pm-stat"><span class="pm-stat-val">${d.recentWr}%</span> win</div>`:''}${d.recentHs?`<div class="pm-stat"><span class="pm-stat-val">${d.recentHs}%</span> HS</div>`:''}</div>`
+  const mapTagsPreview=d.mapStats&&Object.keys(d.mapStats).length?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,0.06)"><div class="pm-recent-label" style="margin-bottom:5px">Map win rates</div><div class="pp-maps">${ALL_MAPS.map(m=>{const ms=d.mapStats[m];const cls=!ms?'none':ms.wr>=55?'good':ms.wr>=45?'ok':'bad';return`<span class="pp-map-tag ${cls}" title="${ms?ms.matches+' games':''}">${MAP_SHORT[m]||m.slice(0,2)}${ms?' '+ms.wr+'%':''}</span>`}).join('')}</div></div>`:''
+  prev.innerHTML=`<div class="pm-preview-top">${d.avatarUrl?`<img src="${d.avatarUrl}" onerror="this.style.display='none'">`:''}<span class="fl fl-${d.level||0}">${d.level||'?'}</span><div><div style="font-size:13px;font-weight:500;color:var(--t1);margin-bottom:2px">${d.name||'—'}</div><div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${d.elo||0} ELO</div></div></div><div style="display:flex;gap:14px;flex-wrap:wrap">${d.kdRatio?`<div class="pm-stat"><span class="pm-stat-val">${d.kdRatio}</span> K/D</div>`:''}${d.recentKd?`<div class="pm-stat"><span class="pm-stat-val">${d.recentKd}${trend}</span> recent</div>`:''}${d.recentWr?`<div class="pm-stat"><span class="pm-stat-val">${d.recentWr}%</span> win</div>`:''}${d.recentHs?`<div class="pm-stat"><span class="pm-stat-val">${d.recentHs}%</span> HS</div>`:''}</div>${mapTagsPreview}`
   prev.classList.add('show')
 }
 
