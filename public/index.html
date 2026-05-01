@@ -128,11 +128,15 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 @keyframes sdp{0%,100%{box-shadow:0 0 4px rgba(0,113,227,0.3)}50%{box-shadow:0 0 14px rgba(0,113,227,0.65)}}
 
 /* TIMER BAR */
-.timer-wrap{height:3px;background:var(--br);border-radius:100px;margin-bottom:14px;overflow:hidden}
+.timer-wrap{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.timer-bar{flex:1;height:3px;background:var(--br);border-radius:100px;overflow:hidden}
 .timer-fill{height:100%;border-radius:100px;transition:width linear;background:linear-gradient(90deg,#2E9BFF,#34C759)}
 .timer-fill.warn{background:linear-gradient(90deg,var(--ban),var(--b))}
 .timer-fill.crit{background:var(--ban);animation:tcrit 0.4s ease-in-out infinite}
 @keyframes tcrit{0%,100%{opacity:1}50%{opacity:0.5}}
+.timer-txt{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.03em;color:var(--t3);min-width:22px;text-align:right;transition:color 0.3s}
+.timer-txt.warn{color:var(--b)}
+.timer-txt.crit{color:var(--ban)}
 
 /* ACTION DISPLAY */
 .ad{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;border:1px solid var(--br);margin-bottom:14px;transition:all 0.32s var(--out);background:var(--surface);box-shadow:var(--sh-sm)}
@@ -440,7 +444,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 
 <!-- 01: Players -->
 <div id="step-players" class="step active">
-  <div class="step-hdr" onclick="if(currentStepIdx>0)activateStep(0,true)">
+  <div class="step-hdr" onclick="goBackTo(0)">
     <span class="step-num">01</span>
     <span class="step-title">Players</span>
     <span class="step-sum" id="sum-players"></span>
@@ -470,7 +474,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 
 <!-- 02: Captains -->
 <div id="step-caps" class="step locked">
-  <div class="step-hdr" onclick="if(currentStepIdx>1)activateStep(1,true)">
+  <div class="step-hdr" onclick="goBackTo(1)">
     <span class="step-num">02</span>
     <span class="step-title">Captains</span>
     <span class="step-sum" id="sum-caps"></span>
@@ -489,7 +493,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 
 <!-- 03: Coin flip -->
 <div id="step-flip" class="step locked">
-  <div class="step-hdr">
+  <div class="step-hdr" onclick="goBackTo(2)">
     <span class="step-num">03</span>
     <span class="step-title">Coin flip</span>
     <span class="step-sum" id="sum-flip"></span>
@@ -508,15 +512,15 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
       <button class="btn btn-p" id="flip-cta" onclick="doFlip()" style="font-size:11px;padding:12px 28px">Flip coin</button>
       <div class="flip-result" id="flip-result">
         <div class="flip-winner-text" id="flip-winner-text"></div>
-        <div class="flip-sub">wins the flip &mdash; choose veto order</div>
+        <div class="flip-sub">wins the flip &mdash; choose draft &amp; veto order</div>
         <div class="flip-choice">
           <button class="flip-btn a-btn" onclick="chooseOrder('first')">
             <span class="flip-btn-label">Go First</span>
-            <span class="flip-btn-desc">Start the veto</span>
+            <span class="flip-btn-desc">1st draft pick · starts veto</span>
           </button>
           <button class="flip-btn b-btn" onclick="chooseOrder('second')">
             <span class="flip-btn-label">Go Second</span>
-            <span class="flip-btn-desc">Let opponent start</span>
+            <span class="flip-btn-desc">2nd draft pick · opponent starts</span>
           </button>
         </div>
       </div>
@@ -526,7 +530,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 
 <!-- 04: Teams -->
 <div id="step-teams" class="step locked">
-  <div class="step-hdr">
+  <div class="step-hdr" onclick="goBackTo(3)">
     <span class="step-num">04</span>
     <span class="step-title">Teams</span>
     <span class="step-sum" id="sum-teams"></span>
@@ -561,6 +565,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
         <div class="tc b"><div class="tl b" id="draft-tlb">Team B</div><div id="draft-tb"></div></div>
       </div>
       <div id="draft-ind"></div>
+      <div id="draft-undo"></div>
       <div id="draft-pool-label"></div>
       <div class="dp-grid" id="draft-pool"></div>
     </div>
@@ -572,7 +577,7 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 
 <!-- 05: Format & Timer -->
 <div id="step-format" class="step locked">
-  <div class="step-hdr">
+  <div class="step-hdr" onclick="goBackTo(4)">
     <span class="step-num">05</span>
     <span class="step-title">Format &amp; timer</span>
     <span class="step-sum" id="sum-format"></span>
@@ -633,7 +638,8 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
     <div id="veto-live" style="display:none">
       <div class="st" id="step-track"></div>
       <div class="timer-wrap" id="timer-wrap" style="display:none">
-        <div class="timer-fill" id="timer-fill" style="width:100%"></div>
+        <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+        <span class="timer-txt" id="timer-txt"></span>
       </div>
       <div class="ad" id="action-disp">
         <div class="pdot a" id="pdot"></div>
@@ -759,7 +765,7 @@ const CF=['#60a5fa','#fb923c','#4ade80','#c084fc','#f87171','#fbbf24','#34d399']
 
 let players=[],teamA=[],teamB=[]
 let teamAName='Team A',teamBName='Team B'
-let teamMode='draft',draftPool=[],draftPhase='snake',draftSnakeIdx=0
+let teamMode='draft',draftPool=[],draftPhase='snake',draftSnakeIdx=0,draftHistory=[]
 let captainA='',captainB=''
 let format='bo3',timerEnabled=true,timerDuration=30
 let selectedMaps=[...ACTIVE]
@@ -770,6 +776,21 @@ let vetoFirst='A',flipWinner=null,MAPS_POOL=[]
 // ── Step management ────────────────────────────────────────────────
 const STEP_IDS=['players','caps','flip','teams','format','veto','results']
 let currentStepIdx=0
+
+function goBackTo(idx){
+  if(currentStepIdx<=idx)return
+  const labels=['Players','Captains','Coin flip','Teams','Format','Veto']
+  if(!confirm('Go back to '+labels[idx]+'?'))return
+  if(idx<5){clearTimer();step=0;vetoLog=[];sideQ=[];mapResults=[];curSide=null;document.getElementById('side-picker').innerHTML='';const vs=document.getElementById('veto-setup'),vl=document.getElementById('veto-live');if(vs)vs.style.display='';if(vl)vl.style.display='none';renderMapPool()}
+  if(idx<4){format='bo3';timerEnabled=true;timerDuration=30;setFmt('bo3');updateTimerUI()}
+  if(idx<3){teamA=[];teamB=[];draftHistory=[];draftSnakeIdx=0;draftPool=[]}
+  if(idx<2){flipWinner=null;vetoFirst='A';document.getElementById('flip-result').style.display='none';document.getElementById('flip-cta').style.display='block'}
+  if(idx<1){captainA='';captainB=''}
+  if(idx===3)initTeamsStep()
+  else if(idx===1)renderCaptainStep()
+  else if(idx===0)renderPlayers()
+  activateStep(idx)
+}
 
 function activateStep(idx){
   currentStepIdx=idx
@@ -868,7 +889,7 @@ function initTeamsStep(){
   document.getElementById('tm-draft').classList.add('active')
   document.getElementById('teams-auto').style.display='none'
   document.getElementById('teams-draft').style.display=''
-  teamA=[captainA];teamB=[captainB];draftPool=players.filter(p=>p!==captainA&&p!==captainB);draftSnakeIdx=0;renderDraft()
+  teamA=[captainA];teamB=[captainB];draftPool=players.filter(p=>p!==captainA&&p!==captainB);draftSnakeIdx=0;draftHistory=[];renderDraft()
 }
 function splitTeamsWithCaptains(){
   const rest=shuffle(players.filter(p=>p!==captainA&&p!==captainB))
@@ -906,20 +927,27 @@ function setTeamMode(mode){
   document.getElementById('tm-draft').classList.toggle('active',mode==='draft')
   document.getElementById('teams-auto').style.display=mode==='auto'?'':'none'
   document.getElementById('teams-draft').style.display=mode==='draft'?'':'none'
-  if(mode==='draft'){teamA=[captainA];teamB=[captainB];draftPool=players.filter(p=>p!==captainA&&p!==captainB);draftPhase='snake';draftSnakeIdx=0;renderDraft()}
+  if(mode==='draft'){teamA=[captainA];teamB=[captainB];draftPool=players.filter(p=>p!==captainA&&p!==captainB);draftPhase='snake';draftSnakeIdx=0;draftHistory=[];renderDraft()}
   else{splitTeamsWithCaptains();renderConfig()}
 }
 function reshuffle(){
-  if(teamMode==='draft'){teamA=[captainA];teamB=[captainB];draftPool=players.filter(p=>p!==captainA&&p!==captainB);draftPhase='snake';draftSnakeIdx=0;renderDraft()}
+  if(teamMode==='draft'){teamA=[captainA];teamB=[captainB];draftPool=players.filter(p=>p!==captainA&&p!==captainB);draftPhase='snake';draftSnakeIdx=0;draftHistory=[];renderDraft()}
   else{splitTeamsWithCaptains();renderConfig()}
 }
 function syncCaptainSelects(){}
 function snakeSeq(){const f=vetoFirst,s=f==='A'?'B':'A';return[f,s,s,f]}
 function draftPick(name){
+  draftHistory.push({teamA:[...teamA],teamB:[...teamB],draftPool:[...draftPool],draftSnakeIdx})
   draftPool=draftPool.filter(p=>p!==name)
   const picker=snakeSeq()[draftSnakeIdx%4]
   if(picker==='A')teamA.push(name);else teamB.push(name)
   draftSnakeIdx++;renderDraft()
+}
+function undoDraftPick(){
+  if(!draftHistory.length)return
+  const prev=draftHistory.pop()
+  teamA=prev.teamA;teamB=prev.teamB;draftPool=prev.draftPool;draftSnakeIdx=prev.draftSnakeIdx
+  renderDraft()
 }
 function currentDraftPicker(){return snakeSeq()[draftSnakeIdx%4]}
 function renderDraft(){
@@ -941,6 +969,8 @@ function renderDraft(){
   const poolLbl=document.getElementById('draft-pool-label'),poolEl=document.getElementById('draft-pool')
   if(poolLbl)poolLbl.innerHTML='<div class="sl" style="margin-bottom:8px">Available players</div>'
   if(poolEl){const cls=currentDraftPicker()==='A'?'pa-pick':'pb-pick';poolEl.innerHTML=draftPool.map(n=>draftCardHTML(n,cls)).join('')}
+  const undoEl=document.getElementById('draft-undo')
+  if(undoEl)undoEl.innerHTML=draftHistory.length?`<button class="btn btn-g" onclick="undoDraftPick()" style="font-size:9px;min-height:30px;padding:5px 14px;margin-top:6px">&#8617; Undo last pick</button>`:''
 }
 function largePCHTML(name,i,team,isDraft=false){
   const p=playerDB.find(x=>x.name===name),color=getPlayerColor(name),initials=name.slice(0,2).toUpperCase()
@@ -1038,20 +1068,24 @@ function updateAction(){
 }
 function startTimer(){
   timerDuration=parseInt(document.getElementById('timer-dur').value)||30;timerLeft=timerDuration
-  const fill=document.getElementById('timer-fill')
+  const fill=document.getElementById('timer-fill'),txt=document.getElementById('timer-txt')
   fill.style.transition='none';fill.style.width='100%';fill.className='timer-fill';void fill.offsetWidth
+  if(txt){txt.textContent=timerDuration;txt.className='timer-txt'}
   clearInterval(timerInterval)
   timerInterval=setInterval(()=>{
+    if(curSide)return
     timerLeft--;const pct=Math.max(0,(timerLeft/timerDuration)*100)
     fill.style.transition='width 1s linear';fill.style.width=pct+'%'
-    if(timerLeft<=10&&timerLeft>5)fill.className='timer-fill warn'
-    if(timerLeft<=5)fill.className='timer-fill crit'
-    if(timerLeft<=0){clearInterval(timerInterval);autoAction()}
+    if(txt)txt.textContent=Math.max(0,timerLeft)
+    if(timerLeft<=10&&timerLeft>5){fill.className='timer-fill warn';if(txt)txt.className='timer-txt warn'}
+    if(timerLeft<=5){fill.className='timer-fill crit';if(txt)txt.className='timer-txt crit'}
+    if(timerLeft<=0){clearInterval(timerInterval);if(txt){txt.textContent='!';txt.className='timer-txt crit'}autoAction()}
   },1000)
 }
 function clearTimer(){
   clearInterval(timerInterval);timerInterval=null
   const fill=document.getElementById('timer-fill');if(fill){fill.style.width='100%';fill.className='timer-fill'}
+  const txt=document.getElementById('timer-txt');if(txt){txt.textContent='';txt.className='timer-txt'}
 }
 function autoAction(){
   const seq=SEQ[format];if(step>=seq.length)return
@@ -1141,7 +1175,7 @@ function resetAll(){
   players=[];teamA=[];teamB=[];teamAName='Team A';teamBName='Team B';captainA='';captainB=''
   format='bo3';timerEnabled=true;timerDuration=30;selectedMaps=[...ACTIVE]
   step=0;vetoLog=[];sideQ=[];mapResults=[];curSide=null;timerLeft=0;vetoFirst='A';flipWinner=null
-  teamMode='draft';draftPool=[];draftPhase='snake';draftSnakeIdx=0
+  teamMode='draft';draftPool=[];draftPhase='snake';draftSnakeIdx=0;draftHistory=[]
   const vs=document.getElementById('veto-setup'),vl=document.getElementById('veto-live')
   if(vs)vs.style.display='';if(vl)vl.style.display='none'
   document.getElementById('side-picker').innerHTML=''
